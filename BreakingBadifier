@@ -27,19 +27,14 @@ elements = %w{
 #============================================================================
 
 def box(name, element)
-  if (!element.empty?)
-    w = element.length
-    l = name.index(/#{element}/i)
-    r = l + w - 1
+  w = element.length
+  l = name.index(/#{element}/i)
 
-    box_top = color("#{' '*l}┌#{'─'*w}┐")
-    box_mid = name.sub(/(#{element})/i) { |m| color("│#{m.upcase}│") }
-    box_bot = box_top.sub('┌', '└').sub('┐', '┘')
+  box_top = color("#{' '*l}┌#{'─'*w}┐")
+  box_mid = name.sub(/(#{element})/i) { |m| color("│#{m.upcase}│") }
+  box_bot = box_top.sub('┌', '└').sub('┐', '┘')
 
-    "#{box_top}\n#{box_mid}\n#{box_bot}"
-  else
-    name
-  end
+  "#{box_top}\n#{box_mid}\n#{box_bot}"
 end
 
 def simple(name, element)
@@ -77,14 +72,19 @@ input = ARGV.join(' ')
 # Run
 #============================================================================
 
-elements.each do |element|
-  if input.upcase.include? element.upcase
-    if (options[:s])
-      puts simple(input, element)
-    else
-      puts box(input, element)
-    end
+results =
+  elements.map do |element|
+    if input.upcase.include? element.upcase
+      word = options[:s] ? simple(input, element) : box(input, element)
 
-    exit if !options[:a]
-  end
+      {:word => word,
+       :len => element.length,
+       :pos => input.index(/#{element}/i)}
+    end
+  end.compact.sort { |x,y| [y[:len], x[:pos]] <=> [x[:len], y[:pos]] }
+
+if (options[:a])
+  results.each { |x| puts x[:word] }
+elsif (results.first)
+  puts results.first[:word]
 end
