@@ -1,0 +1,90 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+
+require 'optparse'
+
+
+#============================================================================
+# Periodic Table!
+#============================================================================
+
+elements = %w{
+  H                                                                   He
+  Li  Be                                          B   C   N   O   F   Ne
+  Na  Mg                                          Al  Si  P   S   Cl  Ar
+  K   Ca  Sc  Ti  V   Cr  Mn  Fe  Co  Ni  Cu  Zn  Ga  Ge  As  Se  Br  Kr
+  Rb  Sr  Y   Zr  Nb  Mo  Tc  Ru  Rh  Pd  Ag  Cd  In  Sn  Sb  Te  I   Xe
+  Cs  Ba      Hf  Ta  W   Re  Os  Ir  Pt  Au  Hg  Tl  Pb  Bi  Po  At  Rn
+  Fr  Ra      Rf  Db  Sg  Bh  Hs  Mt  Ds  Rg  Cn  Uut Fl  Uup Lv  Uus Uuo
+
+              La  Ce  Pr  Nd  Pm  Sm  Eu  Gd  Tb  Dy  Ho  Er  Tm  Yb  Lu
+              Ac  Th  Pa  U   Np  Pu  Am  Cm  Bk  Cf  Es  Fm  Md  No  Lr
+}
+
+
+#============================================================================
+# Helper methods
+#============================================================================
+
+def box(name, element)
+  if (!element.empty?)
+    w = element.length
+    l = name.index(/#{element}/i)
+    r = l + w - 1
+
+    box_top = color("#{' '*l}┌#{'─'*w}┐")
+    box_mid = name.sub(/(#{element})/i) { |m| color("│#{m.upcase}│") }
+    box_bot = box_top.sub('┌', '└').sub('┐', '┘')
+
+    "#{box_top}\n#{box_mid}\n#{box_bot}"
+  else
+    name
+  end
+end
+
+def simple(name, element)
+  name.sub(/(#{element})/i) { |m| color(m.upcase) }
+end
+
+def color(text)
+  "\e[0;32m#{text}\e[0m"
+end
+
+
+#============================================================================
+# Parse command line options
+#============================================================================
+
+options = {}
+
+optparse = OptionParser.new do |opts|
+  opts.on('-a', '--all', 'Show all possible Breaking Bad-ifications') do |a|
+    options[:a] = a
+  end
+  opts.on('-s', '--simple', 'Simple formatting (no box)') do |s|
+    options[:s] = s
+  end
+  opts.on('-h', '--help', 'Show the help screen') do
+    puts opts
+    exit
+  end
+end.parse!
+
+input = ARGV.join(' ')
+
+
+#============================================================================
+# Run
+#============================================================================
+
+elements.each do |element|
+  if input.upcase.include? element.upcase
+    if (options[:s])
+      puts simple(input, element)
+    else
+      puts box(input, element)
+    end
+
+    exit if !options[:a]
+  end
+end
